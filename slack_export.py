@@ -5,6 +5,7 @@ import os
 import io
 import shutil
 import copy
+import requests
 from datetime import datetime
 from pick import pick
 from time import sleep
@@ -294,6 +295,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Export Slack history')
 
     parser.add_argument('--token', required=True, help="Slack API token")
+    parser.add_argument('--cookie', required=True, help="Slack API cookie in your browser")
     parser.add_argument('--zip', help="Name of a zip file to output as")
 
     parser.add_argument(
@@ -331,6 +333,29 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    my_cookie = {
+    "version":0,
+    "name":'d',
+    "value":args.cookie,
+    "port":None,
+    # "port_specified":False,
+    "domain":'slack.com',
+    # "domain_specified":False,
+    # "domain_initial_dot":False,
+    "path":'/',
+    # "path_specified":True,
+    "secure":True,
+    "expires":None,
+    "discard":True,
+    "comment":None,
+    "comment_url":None,
+    "rest":{},
+    "rfc2109":False
+    }
+
+    s = requests.Session()
+    s.cookies.set(**my_cookie)
+
     users = []    
     channels = []
     groups = []
@@ -338,7 +363,7 @@ if __name__ == "__main__":
     userNamesById = {}
     userIdsByName = {}
 
-    slack = Slacker(args.token)
+    slack = Slacker(token=args.token, session=s)
     testAuth = doTestAuth()
     tokenOwnerId = testAuth['user_id']
 
